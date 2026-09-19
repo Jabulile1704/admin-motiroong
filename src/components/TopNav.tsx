@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { roleLabel } from "@/lib/backend";
+import { useAdmin, useSession } from "@/lib/session";
 import { useTheme } from "@/lib/theme";
 import { Avatar, Mark } from "./ui";
 import { MoonIcon, SearchIcon, SunIcon } from "./icons";
@@ -19,6 +21,8 @@ const tabs = [
 export function TopNav() {
   const pathname = usePathname();
   const { theme, toggle } = useTheme();
+  const admin = useAdmin();
+  const { signOut } = useSession();
 
   return (
     <div className="sticky top-0 z-50 h-16 bg-[var(--surface)] border-b border-[var(--border)] flex items-center gap-2 px-7">
@@ -77,15 +81,21 @@ export function TopNav() {
         </button>
 
         <div className="flex items-center gap-[9px] pl-[14px] border-l border-[var(--border)]">
-          <Avatar name="Jabulile Mashibini" inverted size={32} />
+          <Avatar name={admin.name} inverted size={32} />
           <div>
             <div className="text-[13px] font-semibold leading-[1.2]">
-              Jabulile Mashibini
+              {admin.name}
             </div>
             <div className="eyebrow text-[10px] leading-[1.2] normal-case">
-              Admin
+              {roleLabel[admin.role]}
             </div>
           </div>
+          <button
+            onClick={signOut}
+            className="ml-2 text-[12px] font-semibold text-[var(--muted)] hover:text-[var(--text)] cursor-pointer"
+          >
+            Sign out
+          </button>
         </div>
       </div>
     </div>
