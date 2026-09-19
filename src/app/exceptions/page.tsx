@@ -15,6 +15,7 @@ import {
 } from "@/components/ui";
 import {
   exceptionTypeLabel,
+  fmtCalendarDay,
   fmtDay,
   reviewException,
   timeAgo,
@@ -144,7 +145,7 @@ export default function ExceptionsPage() {
         >
           <div>Employee</div>
           <div>Type</div>
-          <div>Submitted</div>
+          <div>For date</div>
           <div>Reason</div>
           <div>{filter === "pending" ? "Waiting" : "Reviewed"}</div>
           <div>{filter === "pending" ? "Action" : "Status"}</div>
@@ -166,7 +167,9 @@ export default function ExceptionsPage() {
               <div>
                 <StatusPill variant="outlined">{exceptionTypeLabel(r.type)}</StatusPill>
               </div>
-              <div className="text-[var(--muted)]">{fmtDay(r.submittedAt)}</div>
+              <div className="text-[var(--muted)]" title={`Submitted ${fmtDay(r.submittedAt)}`}>
+                {fmtCalendarDay(r.forDate) ?? fmtDay(r.submittedAt)}
+              </div>
               <div className="text-[var(--muted)] pr-4">
                 {r.reason}
                 {r.reviewNotes && (
