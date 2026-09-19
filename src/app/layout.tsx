@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 
 import { ThemeProvider } from "@/lib/theme";
-import { TopNav } from "@/components/TopNav";
+import { AuthGate } from "@/components/AuthGate";
+import { SessionProvider } from "@/lib/session";
 import "./globals.css";
 
 const grotesk = localFont({
@@ -38,10 +39,9 @@ export default function RootLayout({
       </head>
       <body className={`${grotesk.variable} ${mono.variable} antialiased`}>
         <ThemeProvider>
-          <TopNav />
-          <main className="max-w-[1440px] mx-auto px-8 pt-8 pb-20">
-            {children}
-          </main>
+          <SessionProvider>
+            <AuthGate>{children}</AuthGate>
+          </SessionProvider>
         </ThemeProvider>
       </body>
     </html>
