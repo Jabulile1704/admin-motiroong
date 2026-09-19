@@ -68,6 +68,7 @@ export default function EmployeesPage() {
         (site === "all" || e.siteId === site) &&
         (e.fullName.toLowerCase().includes(q) ||
           e.email.toLowerCase().includes(q) ||
+          (e.phone ?? "").includes(q) ||
           e.employeeId.toLowerCase().includes(q)),
     );
   }, [employees.data, view, status, site, search]);
@@ -143,7 +144,7 @@ export default function EmployeesPage() {
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search name, email or ID…"
+          placeholder="Search name, email, phone or ID…"
           aria-label="Search employees"
           className={`${selectCls} flex-1 max-w-[280px] placeholder:text-[var(--muted)]`}
         />
@@ -283,7 +284,10 @@ function PendingRow({
         <Avatar name={e.fullName} />
         <div className="min-w-0">
           <div className="truncate">{e.fullName}</div>
-          <div className="text-[12px] text-[var(--muted)] truncate">{e.email}</div>
+          <div className="text-[12px] text-[var(--muted)] truncate">
+            {e.email}
+            {e.phone && <> · {e.phone}</>}
+          </div>
         </div>
       </div>
       <div className="text-[var(--muted)]">{e.employeeId || "—"}</div>
@@ -383,7 +387,10 @@ function AllTable(props: {
                   {e.fullName}
                   {self && <span className="text-[var(--muted)]"> (you)</span>}
                 </div>
-                <div className="text-[12px] text-[var(--muted)] truncate">{e.email}</div>
+                <div className="text-[12px] text-[var(--muted)] truncate">
+            {e.email}
+            {e.phone && <> · {e.phone}</>}
+          </div>
               </div>
             </div>
             <div className="text-[var(--muted)]">{e.employeeId || "—"}</div>
