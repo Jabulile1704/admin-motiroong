@@ -82,6 +82,8 @@ export type ExceptionRequest = {
   employeeId: string;
   attendanceId: string | null;
   type: string;
+  /** The calendar day the request is about (YYYY-MM-DD), when given. */
+  forDate: string | null;
   reason: string;
   status: ExceptionStatus;
   submittedAt: Date | null;
@@ -151,6 +153,7 @@ const toException = (id: string, d: Raw): ExceptionRequest => ({
   employeeId: (d.employeeId as string) ?? "",
   attendanceId: (d.attendanceId as string) ?? null,
   type: (d.type as string) ?? "other",
+  forDate: (d.forDate as string) ?? null,
   reason: (d.reason as string) ?? "",
   status: (d.status as ExceptionStatus) ?? "pending",
   submittedAt: date(d.submittedAt),
@@ -322,6 +325,13 @@ const timeFmt = new Intl.DateTimeFormat("en-ZA", { hour: "numeric", minute: "2-d
 
 export const fmtDay = (d: Date | null) => (d ? dayFmt.format(d) : "—");
 export const fmtTime = (d: Date | null) => (d ? timeFmt.format(d) : "—");
+/** "2026-09-18" (a calendar day, no timezone) → "Sep 18". */
+export const fmtCalendarDay = (day: string | null) => {
+  if (!day) return null;
+  const [y, m, d] = day.split("-").map(Number);
+  return y && m && d ? dayFmt.format(new Date(y, m - 1, d)) : day;
+};
+
 export const fmtDateTime = (d: Date | null) =>
   d ? `${dayFmt.format(d)}, ${timeFmt.format(d)}` : "—";
 
@@ -366,7 +376,11 @@ export const flagLabel: Record<AttendanceFlag, string> = {
 
 export const exceptionTypeLabel = (t: string) =>
   ({
+    late_arrival: "Late arrival",
+    early_leave: "Early leave",
+    absence: "Absence",
     missed_clock_in: "Missed clock-in",
+    missed_clock_out: "Missed clock-out",
     outside_geofence: "Outside geofence",
     device_failure: "Device failure",
     other: "Other",
@@ -381,6 +395,7 @@ export function describeAction(action: string) {
     "employee.suspended": "Suspended employee",
     "employee.active": "Reactivated employee",
     "employee.role_changed": "Changed role",
+    "employee.phone_updated": "Updated phone number",
     "device.enrolled": "Set up quick sign-in",
     "device.reenrolled": "Re-enrolled device",
     "device.revoked": "Removed device",
