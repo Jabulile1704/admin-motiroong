@@ -1,4 +1,4 @@
-import { initials } from "@/lib/data";
+import { initials } from "@/lib/backend";
 
 /** Space Mono uppercase eyebrow above a page title. */
 export function Eyebrow({ children }: { children: React.ReactNode }) {
@@ -142,5 +142,27 @@ export function Mark({ size = 22 }: { size?: number }) {
         style={{ top: -2, right: -2, width: dot, height: dot }}
       />
     </span>
+  );
+}
+
+/** One-line outcome banner above a table: success, or the backend's error. */
+export function Notice({
+  children,
+  error = false,
+}: {
+  children: React.ReactNode;
+  error?: boolean;
+}) {
+  return (
+    <div
+      role={error ? "alert" : "status"}
+      className={`mb-4 px-4 py-3 rounded-[12px] text-[13px] ${
+        error
+          ? "border border-[var(--text)] font-semibold"
+          : "bg-[var(--surface-alt)]"
+      }`}
+    >
+      {children}
+    </div>
   );
 }
