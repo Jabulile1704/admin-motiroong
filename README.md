@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MoTiroong Admin
 
-## Getting Started
+Admin dashboard for MoTiroong. It uses the same Firebase backend as the
+mobile app ([motiroong-backend](https://github.com/Jabulile1704/motiroong-backend)).
 
-First, run the development server:
+- **Reads** come live from Firestore (employees, sites, attendance,
+  exceptions, audit log). `firestore.rules` allows admins and supervisors to
+  read them.
+- **Changes** go through the backend's callable functions. The functions
+  check the caller's role and write the audit trail:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+| Page | What it does | Backend |
+|---|---|---|
+| Dashboard | Live counts, hours logged, who's in by site, recent activity | Firestore reads |
+| Attendance | Shifts with flags, filters, CSV export | Firestore reads |
+| Sites | Add, edit and archive geofences | `upsertSite`, `archiveSite` |
+| Employees | Approve or reject sign-ups; suspend, reactivate, change role | `approveEmployee`, `rejectEmployee`, `setEmployeeStatus`, `setEmployeeRole` |
+| Exceptions | Approve or deny employees' explanations | `reviewException` |
+| Audit Log | Every privileged action | Firestore reads (admins only) |
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Only accounts with the **admin** or **supervisor** role get past the sign-in
+page. Supervisors can review but can't approve sign-ups or edit sites; the
+backend refuses those.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Run it locally
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Start the local backend (Firebase Emulator Suite) with `./start.sh` from
+   the [Motirong-firebase](https://github.com/Jabulile1704/Motirong-firebase) repo.
+2. Set up the dashboard:
 
-## Learn More
+   ```bash
+   cp .env.example .env.local   # NEXT_PUBLIC_USE_EMULATORS=true
+   npm install
+   npm run dev
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+3. Open <http://localhost:3000> and sign in with an admin account. In the
+   Motirong-firebase snapshot every account's password is `motirong-dev-2026`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## The first admin
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+`approveEmployee` needs an admin, so the first admin is made by
+`motiroong-backend/functions/src/scripts/bootstrap-admin.ts`. That script
+sets the role and status in both the employee record and the sign-in token
+claims, and Firestore rules read the claims. Editing the record in the
+console alone isn't enough: the dashboard will say the account has no admin
+access.
 
-## Deploy on Vercel
+## Against the deployed project
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Register a Web app in the Firebase console (Project settings → Your apps),
+put its config in `.env.local`, and remove `NEXT_PUBLIC_USE_EMULATORS`.
+Cloud Functions need the Blaze plan.
