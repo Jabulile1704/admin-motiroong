@@ -32,6 +32,19 @@ export const REGION = "africa-south1";
 const useEmulators = process.env.NEXT_PUBLIC_USE_EMULATORS === "true";
 const emulatorHost = process.env.NEXT_PUBLIC_EMULATOR_HOST || "127.0.0.1";
 
+/**
+ * Origin of a self-hosted backend, e.g. https://motiroong.onrender.com.
+ *
+ * Cloud Functions only runs on the Blaze plan, so the same `onCall` handlers
+ * can be served from any Node host instead (`functions/src/server.ts` in
+ * motiroong-backend). getFunctions() takes such an origin in place of a
+ * region and then posts the identical callable protocol to
+ * `<origin>/<name>`, so nothing downstream of here changes.
+ *
+ * Auth and Firestore still talk to the real project, which is free on Spark.
+ */
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL?.replace(/\/+$/, "");
+
 const config = {
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "motirong-32a1c",
   // The emulators accept any key; the deployed project needs the web app's.
@@ -58,7 +71,9 @@ export function firebase() {
   const app = getApps().length ? getApp() : initializeApp(config);
   const auth = getAuth(app);
   const db = getFirestore(app);
-  const functions = getFunctions(app, REGION);
+  // A custom origin replaces the region: with one, the SDK posts to
+  // <origin>/<name>; with the other, to the deployed Cloud Functions URL.
+  const functions = getFunctions(app, backendUrl || REGION);
 
   if (useEmulators) {
     connectAuthEmulator(auth, `http://${emulatorHost}:9099`, {
@@ -73,3 +88,4 @@ export function firebase() {
 }
 
 export const usingEmulators = useEmulators;
+export const backendOrigin = backendUrl ?? null;
